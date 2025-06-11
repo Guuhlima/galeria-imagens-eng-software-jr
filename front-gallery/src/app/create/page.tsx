@@ -1,7 +1,6 @@
 import Link from "next/link";
 import GalleryForm from "./GalleryForm";
 
-
 export default function CreateGalleryPage() {
     return (
         <main className="p-8">

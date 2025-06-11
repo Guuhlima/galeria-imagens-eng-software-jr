@@ -1,15 +1,13 @@
 import Navbar from "./components/Navbar";
 import Header from "./components/Header";
-import GalleryGrid from "./components/GalleryGrid";
-
+import GalleryClientPage from "./create/GalleryClientPage";
 
 export default function GalleryPage() {
-
   return (
     <main>
       <Navbar />
       <Header />
-      <GalleryGrid />
+      <GalleryClientPage />
     </main>
   );
 }

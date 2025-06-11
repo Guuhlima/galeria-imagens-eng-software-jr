@@ -43,7 +43,7 @@ export default function GalleryForm() {
             if (!uploadResult?.ok) throw new Error(uploadResult.message);
 
             setMessage("Galeria criada com sucesso!");
-            await router.push("/"); // Redireciona para home
+            await router.push("/");
             setPreview(null);
             reset();
         } catch (err: any) {

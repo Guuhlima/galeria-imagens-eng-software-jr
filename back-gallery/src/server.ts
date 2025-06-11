@@ -20,16 +20,15 @@ app.register(require('@fastify/static'), {
 
 app.register(cors, {
   origin: (origin, callback) => {
-    const allowedOrigins = [
-      'http://localhost:3000',
-    ];
-
+    const allowedOrigins = ['http://localhost:3001'];
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
-    }
+    } 
   },
-  credentials: true, // Permite cookies ou cabeçalhos de autenticação
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], 
+  credentials: true,
 });
+
 
 app.register(galleryRouter);
 

@@ -13,4 +13,5 @@ model Gallery {
   filename  String?
   url       String?
   createdAt DateTime @default(now())
+  active    Boolean  @default(true)
 }

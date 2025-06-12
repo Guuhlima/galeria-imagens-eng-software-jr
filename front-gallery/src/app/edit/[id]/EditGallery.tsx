@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Swal from "sweetalert2";
 import { apiFetch, apiUpload } from "@/lib/api";
 
 interface EditGalleryPageProps {
@@ -16,7 +17,6 @@ export default function EditGalleryPage({ id }: EditGalleryPageProps) {
   const [image, setImage] = useState<File | null>(null);
   const [currentUrl, setCurrentUrl] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [message, setMessage] = useState("");
 
   useEffect(() => {
     if (!id) return;
@@ -26,9 +26,8 @@ export default function EditGalleryPage({ id }: EditGalleryPageProps) {
         const data = await apiFetch(`/gallery/${id}`);
         setTitle(data.title || "");
         setCurrentUrl(data.url || "");
-      } catch (error) {
-        const errMsg = error instanceof Error ? error.message : "Erro ao carregar dados.";
-        setMessage(errMsg);
+      } catch {
+        Swal.fire("Erro", "Erro ao carregar dados da galeria", "error");
       }
     };
 
@@ -61,14 +60,11 @@ export default function EditGalleryPage({ id }: EditGalleryPageProps) {
         if (!uploadResult?.ok) throw new Error(uploadResult.message);
       }
 
-      setMessage("Imagem atualizada com sucesso!");
-
-      setTimeout(() => {
-        router.push("/");
-      }, 800);
+      await Swal.fire("Sucesso", "Imagem atualizada com sucesso!", "success");
+      router.push("/");
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : "Erro ao atualizar galeria";
-      setMessage(errMsg);
+      Swal.fire("Erro", errMsg, "error");
     }
   };
 
@@ -112,8 +108,6 @@ export default function EditGalleryPage({ id }: EditGalleryPageProps) {
         >
           Salvar Alterações
         </button>
-
-        {message && <p className="text-center mt-4">{message}</p>}
       </form>
     </div>
   );

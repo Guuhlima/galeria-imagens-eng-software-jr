@@ -6,8 +6,7 @@ import { apiFetch } from "@/lib/api";
 import { convertUrl } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ImageItem } from "@/app/models/imageItem";
-import { PaginatedImageResponse } from "@/app/models/imageItem";
+import { ImageItem, PaginatedImageResponse } from "@/models/imageItem";
 
 export default function GalleryGrid() {
   const searchParams = useSearchParams();

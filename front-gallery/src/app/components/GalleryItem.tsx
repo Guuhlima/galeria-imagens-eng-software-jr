@@ -5,7 +5,6 @@ import Link from "next/link";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ImageItem } from "@/app/models/imageItem";
 
 interface GalleryItemProps {
   id: string;

@@ -31,7 +31,6 @@ export default function GalleryItem({ id, title, url, active }: GalleryItemProps
         });
 
         if (res.ok) {
-          // Recarrega a página após deletar
           window.location.reload();
         } else {
           Swal.fire("Erro", "Não foi possível deletar a imagem", "error");

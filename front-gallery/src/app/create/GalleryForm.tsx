@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { gallerySchema, GalleryFormData } from "./schema";
-import Image from "next/image";
 import { apiFetch, apiUpload } from "@/lib/api";
 
 export default function GalleryForm() {
@@ -92,7 +91,7 @@ export default function GalleryForm() {
             {preview && (
                 <div className="border p-2 rounded text-center">
                     <p className="font-medium mb-2">Image preview</p>
-                    <Image src={preview} alt="Preview" className="max-h-64 mx-auto rounded" />
+                    <img src={preview} alt="Preview" className="max-h-64 mx-auto rounded" />
                 </div>
             )}
 

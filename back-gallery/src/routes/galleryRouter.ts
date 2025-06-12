@@ -1,5 +1,4 @@
 import { FastifyInstance } from "fastify";
-import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import {
   GalleryParams,
   GalleryQuery,
@@ -17,37 +16,27 @@ import {
 } from '../controllers/galleryController';
 
 export async function galleryRouter(app: FastifyInstance) {
-  app.withTypeProvider<TypeBoxTypeProvider>().route({
-    method: 'GET',
-    url: '/gallery',
+  app.get('/gallery', {
     schema: { querystring: GalleryQuery },
     handler: listGallery,
   });
 
-  app.withTypeProvider<TypeBoxTypeProvider>().route({
-    method: 'POST',
-    url: '/gallery',
+  app.post('/gallery', {
     schema: { body: GalleryCreateBody },
     handler: galleryCreate,
   });
 
-  app.withTypeProvider<TypeBoxTypeProvider>().route({
-    method: 'POST',
-    url: '/gallery/:galleryId/upload',
+  app.post('/gallery/:galleryId/upload', {
     schema: { params: GalleryParams },
     handler: galleryUpload,
   });
 
-  app.withTypeProvider<TypeBoxTypeProvider>().route({
-    method: 'GET',
-    url: '/gallery/:galleryId',
+  app.get('/gallery/:galleryId', {
     schema: { params: GalleryParams },
     handler: galleryGetById,
   });
 
-  app.withTypeProvider<TypeBoxTypeProvider>().route({
-    method: 'PUT',
-    url: '/gallery/:galleryId',
+  app.put('/gallery/:galleryId', {
     schema: {
       params: GalleryParams,
       body: GalleryUpdateBody,
@@ -55,16 +44,12 @@ export async function galleryRouter(app: FastifyInstance) {
     handler: galleryUpdate,
   });
 
-  app.withTypeProvider<TypeBoxTypeProvider>().route({
-    method: 'DELETE',
-    url: '/gallery/:galleryId',
+  app.delete('/gallery/:galleryId', {
     schema: { params: GalleryParams },
     handler: galleryDelete,
   });
 
-  app.withTypeProvider<TypeBoxTypeProvider>().route({
-    method: 'PATCH',
-    url: '/gallery/:galleryId/active',
+  app.patch('/gallery/:galleryId/active', {
     schema: { params: GalleryParams },
     handler: galleryToggleAtiva,
   });

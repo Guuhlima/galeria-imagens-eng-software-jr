@@ -1,17 +1,24 @@
 import { FastifyRequest, FastifyReply } from "fastify";
+import { MultipartFile } from "@fastify/multipart";
+import { Static } from "@sinclair/typebox";
 import { createWriteStream, unlinkSync, existsSync } from "fs";
-import { pipeline } from "node:stream";
-import { promisify } from "node:util";
+import { pipeline } from "stream";
+import { promisify } from "util";
 import { extname, resolve } from "path";
 import { randomUUID } from "crypto";
 import { prisma } from "../lib/prisma";
-import { Static } from "@sinclair/typebox";
 import {
   GalleryCreateBody,
   GalleryUpdateBody,
   GalleryParams,
   GalleryQuery,
 } from "../schemas/gallerySchemas";
+
+interface GalleryUploadRequest extends FastifyRequest<{
+  Params: Static<typeof GalleryParams>;
+}> {
+  file: () => Promise<MultipartFile>;
+}
 
 const pump = promisify(pipeline);
 
@@ -38,17 +45,28 @@ export async function galleryCreate(
 }
 
 export async function galleryUpload(
-  request: FastifyRequest<{ Params: Static<typeof GalleryParams> }> & { file: () => Promise<any> },
+  request: FastifyRequest<{ Params: Static<typeof GalleryParams> }>,
   reply: FastifyReply
 ) {
-  const file = await (request as any).file();
+  const file = await (request as any).file() as MultipartFile;
   const { galleryId } = request.params;
 
   try {
-    const gallery = await prisma.gallery.findFirst({ where: { id: Number(galleryId) } });
+    const gallery = await prisma.gallery.findFirst({
+      where: { id: Number(galleryId) },
+    });
 
-    if (!gallery) return reply.status(404).send({ error: "Not Found", message: "Galeria não encontrada" });
-    if (!file) return reply.status(400).send({ error: "Bad Request", message: "Nenhum arquivo enviado" });
+    if (!gallery)
+      return reply.status(404).send({
+        error: "Not Found",
+        message: "Galeria não encontrada",
+      });
+
+    if (!file)
+      return reply.status(400).send({
+        error: "Bad Request",
+        message: "Nenhum arquivo enviado",
+      });
 
     if (gallery.filename) {
       const oldPath = resolve(__dirname, "../../uploads/", gallery.filename);
@@ -64,12 +82,21 @@ export async function galleryUpload(
 
     const updatedGallery = await prisma.gallery.update({
       where: { id: gallery.id },
-      data: { filename: fileName, url: `/uploads/${fileName}` },
+      data: {
+        filename: fileName,
+        url: `/uploads/${fileName}`,
+      },
     });
 
-    return reply.status(200).send({ message: "Upload realizado com sucesso", gallery: updatedGallery });
+    return reply.status(200).send({
+      message: "Upload realizado com sucesso",
+      gallery: updatedGallery,
+    });
   } catch (error: any) {
-    return reply.status(500).send({ error: "Internal Server Error", message: error.message });
+    return reply.status(500).send({
+      error: "Internal Server Error",
+      message: error.message,
+    });
   }
 }
 
@@ -98,10 +125,13 @@ export async function galleryUpdate(
 }
 
 export async function listGallery(
-  request: FastifyRequest<{ Querystring: Static<typeof GalleryQuery> }> ,
+  request: FastifyRequest<{ Querystring: Static<typeof GalleryQuery> }>,
   reply: FastifyReply
 ) {
-  const { limit = "12", offset = "0", search = "", status = "all" } = request.query;
+  const limit = parseInt(request.query.limit ?? '12', 10);
+  const offset = parseInt(request.query.offset ?? '0', 10);
+  const search = request.query.search ?? '';
+  const status = request.query.status ?? 'all';
 
   try {
     const where: any = {};
@@ -112,8 +142,8 @@ export async function listGallery(
     const total = await prisma.gallery.count({ where });
     const rows = await prisma.gallery.findMany({
       where,
-      skip: Number(offset),
-      take: Number(limit),
+      skip: offset,
+      take: limit,
       orderBy: { id: "asc" },
       select: { id: true, title: true, url: true, active: true },
     });
@@ -121,12 +151,12 @@ export async function listGallery(
     return reply.send({
       data: rows,
       pagination: {
-        page: Math.floor(Number(offset) / Number(limit)) + 1,
-        limit: Number(limit),
+        page: Math.floor(offset / limit) + 1,
+        limit,
         totalItems: total,
-        totalPages: Math.ceil(total / Number(limit)),
-        hasNextPage: Number(offset) + Number(limit) < total,
-        hasPreviousPage: Number(offset) > 0,
+        totalPages: Math.ceil(total / limit),
+        hasNextPage: offset + limit < total,
+        hasPreviousPage: offset > 0,
       },
     });
   } catch (error: any) {

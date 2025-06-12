@@ -26,7 +26,13 @@ export default function GalleryForm() {
     try {
       const result = await apiFetch("/gallery", {
         method: "POST",
-        body: JSON.stringify({ title: data.title }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: data.title,
+          url: "https://placeholder.com/temporary.jpg",
+        }),
       });
 
       const galleryId: number = result.gallery.id;
@@ -55,6 +61,7 @@ export default function GalleryForm() {
       }
     }
   };
+
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

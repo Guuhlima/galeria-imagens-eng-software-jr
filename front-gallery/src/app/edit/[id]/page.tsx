@@ -3,59 +3,82 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
+import { apiFetch, apiUpload } from "@/lib/api";
 
 export default function EditGalleryPage() {
-  const { id } = useParams();
+  const params = useParams();
   const router = useRouter();
+
+  const id = typeof params.id === "string" ? params.id : "";
 
   const [title, setTitle] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [currentUrl, setCurrentUrl] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     async function fetchData() {
-      const res = await fetch(`http://localhost:3333/gallery/${id}`);
-      const data = await res.json();
-      setTitle(data.title);
-      setCurrentUrl(data.url);
+      try {
+        const data = await apiFetch(`/gallery/${id}`, { method: "GET" });
+        setTitle(data.title);
+        setCurrentUrl(data.url);
+      } catch (error: unknown) {
+        const errMsg = error instanceof Error ? error.message : "Erro ao carregar dados.";
+        setMessage(errMsg);
+      }
     }
+
     if (id) fetchData();
   }, [id]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImage(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    await fetch(`http://localhost:3333/gallery/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title }),
-    });
-
-    if (image) {
-      const formData = new FormData();
-      formData.append("file", image);
-
-      await fetch(`http://localhost:3333/gallery/${id}/upload`, {
-        method: "POST",
-        body: formData,
+    try {
+      await apiFetch(`/gallery/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ title }),
       });
-    }
 
-    alert("Imagem atualizada com sucesso!");
-    router.push("/");
+      if (image) {
+        const formData = new FormData();
+        formData.append("file", image);
+
+        const uploadResult = await apiUpload(`/gallery/${id}/upload`, "POST", formData);
+        if (!uploadResult?.ok) throw new Error(uploadResult.message);
+      }
+
+      setMessage("Imagem atualizada com sucesso!");
+
+      setTimeout(() => {
+        router.push("/");
+      }, 800);
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : "Erro ao atualizar galeria";
+      setMessage(errMsg);
+    }
   };
 
   return (
     <div className="max-w-xl mx-auto mt-10 p-6 bg-white shadow rounded">
       <h2 className="text-2xl font-bold mb-4">Editar Galeria</h2>
 
-      {currentUrl && (
+      {(previewUrl || currentUrl) && (
         <Image
-          src={`http://localhost:3333${currentUrl}`}
+          src={previewUrl || `http://localhost:3333${currentUrl}`}
           alt={title}
           width={300}
           height={200}
-          className="mb-4"
+          className="mb-4 rounded"
         />
       )}
 
@@ -76,12 +99,11 @@ export default function EditGalleryPage() {
             Escolher imagem
             <input
               type="file"
-              onChange={(e) => setImage(e.target.files?.[0] || null)}
+              onChange={handleImageChange}
               className="hidden"
             />
           </label>
         </div>
-
 
         <button
           type="submit"
@@ -89,6 +111,8 @@ export default function EditGalleryPage() {
         >
           Salvar Alterações
         </button>
+
+        {message && <p className="text-center mt-4">{message}</p>}
       </form>
     </div>
   );

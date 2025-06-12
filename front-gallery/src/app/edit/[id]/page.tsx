@@ -1,25 +1,19 @@
-export const dynamic = "force-dynamic";
-export const fetchCache = "force-no-store";
-export const revalidate = 0;
+"use client";
 
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import EditGalleryPage from "./EditGallery";
 
-interface Props {
-  params: {
-    id: string;
-  };
-}
-
-export default async function EditPage({ params }: Props) {
-  const { id } = await Promise.resolve(params);
+export default function EditPage() {
+  const params = useParams();
+  const id = params?.id as string;
 
   return (
     <main className="p-8">
       <Link href="/" className="p-4 rounded-lg block mb-4 bg-gray-200 hover:bg-gray-300">
-        ← Voltar
+        Voltar
       </Link>
-      <EditGalleryPage id={id} />
+      {id && <EditGalleryPage id={id} />}
     </main>
   );
 }

@@ -36,7 +36,7 @@ export default function GalleryItem({ id, title, url, active }: GalleryItemProps
       });
 
       if (res.ok) {
-        router.push(window.location.pathname);
+        router.refresh();
       } else {
         Swal.fire("Erro", "Não foi possível deletar a imagem", "error");
       }

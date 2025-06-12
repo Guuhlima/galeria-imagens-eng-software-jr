@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { apiFetch, apiUpload } from "@/lib/api";
 
-export default function EditGalleryPage() {
-  const params = useParams();
-  const router = useRouter();
+// ✅ Interface que declara que o componente espera um id
+interface EditGalleryPageProps {
+  id: string;
+}
 
-  const id = typeof params.id === "string" ? params.id : "";
+export default function EditGalleryPage({ id }: EditGalleryPageProps) {
+  const router = useRouter();
 
   const [title, setTitle] = useState("");
   const [image, setImage] = useState<File | null>(null);
@@ -18,18 +20,20 @@ export default function EditGalleryPage() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    async function fetchData() {
+    if (!id) return;
+
+    const fetchData = async () => {
       try {
-        const data = await apiFetch(`/gallery/${id}`, { method: "GET" });
-        setTitle(data.title);
-        setCurrentUrl(data.url);
-      } catch (error: unknown) {
+        const data = await apiFetch(`/gallery/${id}`);
+        setTitle(data.title || "");
+        setCurrentUrl(data.url || "");
+      } catch (error) {
         const errMsg = error instanceof Error ? error.message : "Erro ao carregar dados.";
         setMessage(errMsg);
       }
-    }
+    };
 
-    if (id) fetchData();
+    fetchData();
   }, [id]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,6 +50,7 @@ export default function EditGalleryPage() {
     try {
       await apiFetch(`/gallery/${id}`, {
         method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title }),
       });
 
@@ -62,7 +67,7 @@ export default function EditGalleryPage() {
       setTimeout(() => {
         router.push("/");
       }, 800);
-    } catch (error: unknown) {
+    } catch (error) {
       const errMsg = error instanceof Error ? error.message : "Erro ao atualizar galeria";
       setMessage(errMsg);
     }
@@ -90,6 +95,7 @@ export default function EditGalleryPage() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full border p-2 rounded"
+            required
           />
         </div>
 
@@ -97,11 +103,7 @@ export default function EditGalleryPage() {
           <label className="block mb-1 font-medium">Nova Imagem</label>
           <label className="inline-block bg-gray-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-gray-600">
             Escolher imagem
-            <input
-              type="file"
-              onChange={handleImageChange}
-              className="hidden"
-            />
+            <input type="file" onChange={handleImageChange} className="hidden" />
           </label>
         </div>
 

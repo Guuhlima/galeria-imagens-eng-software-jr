@@ -5,7 +5,7 @@ const Navbar = () => (
         <h1 className="text-xl font-bold">Gallery</h1>
         <ul className="flex gap-4">
             <Link href="create" className="p-4 rounded-lg">
-                Create
+                Nova Galeria
             </Link>
         </ul>
     </nav>

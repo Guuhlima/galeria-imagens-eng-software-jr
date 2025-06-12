@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import Swal from "sweetalert2";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface GalleryItemProps {
@@ -14,28 +15,31 @@ interface GalleryItemProps {
 
 export default function GalleryItem({ id, title, url, active }: GalleryItemProps) {
   const [isActive, setIsActive] = useState(active);
+  const router = useRouter();
+
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
   const handleDelete = async () => {
-      const resultado = await Swal.fire({
-        title: "Deseja deletar essa imagem?",
-        text: "Essa ação após aceita não há mais volta",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Sim, deletar",
-        cancelButtonText: "Cancelar",
+    const resultado = await Swal.fire({
+      title: "Deseja deletar essa imagem?",
+      text: "Essa ação após aceita não há mais volta",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sim, deletar",
+      cancelButtonText: "Cancelar",
+    });
+
+    if (resultado.isConfirmed) {
+      const res = await fetch(`${baseUrl}/gallery/${id}`, {
+        method: "DELETE",
       });
 
-      if (resultado.isConfirmed) {
-        const res = await fetch(`http://localhost:3333/gallery/${id}`, {
-          method: "DELETE",
-        });
-
-        if (res.ok) {
-          window.location.reload();
-        } else {
-          Swal.fire("Erro", "Não foi possível deletar a imagem", "error");
-        }
+      if (res.ok) {
+        router.refresh();
+      } else {
+        Swal.fire("Erro", "Não foi possível deletar a imagem", "error");
       }
+    }
   };
 
   const handleToggleAtiva = async () => {
@@ -48,7 +52,7 @@ export default function GalleryItem({ id, title, url, active }: GalleryItemProps
     });
 
     if (result.isConfirmed) {
-      const res = await fetch(`http://localhost:3333/gallery/${id}/active`, {
+      const res = await fetch(`${baseUrl}/gallery/${id}/active`, {
         method: "PATCH",
       });
 
@@ -62,6 +66,8 @@ export default function GalleryItem({ id, title, url, active }: GalleryItemProps
 
   return (
     <div className="border rounded p-4 shadow-md text-center">
+      <h2 className="text-lg font-semibold mb-2">{title}</h2>
+
       {url ? (
         <Image
           src={url}
@@ -76,15 +82,13 @@ export default function GalleryItem({ id, title, url, active }: GalleryItemProps
         </div>
       )}
 
-      <h2 className="text-lg font-semibold mb-2">{title}</h2>
-
       <div className="flex justify-center gap-3">
         <Link href={`/edit/${id}`} className="text-blue-600 hover:underline">
-          Editar
+          🖉 Editar
         </Link>
 
         <button onClick={handleDelete} className="text-red-600 hover:underline">
-          Deletar
+          🗑️ Deletar
         </button>
 
         <button onClick={handleToggleAtiva} className="hover:underline">

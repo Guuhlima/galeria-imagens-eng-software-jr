@@ -1,6 +1,11 @@
-import { convertUrl } from "@/lib/utils";
+"use client";
+
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import GalleryItem from "./GalleryItem";
+import { apiFetch } from "@/lib/api";
+import { convertUrl } from "@/lib/utils";
 
 type GalleryItemType = {
   id: number;
@@ -9,14 +14,33 @@ type GalleryItemType = {
   active?: boolean;
 };
 
-interface Props {
-  images: GalleryItemType[];
-  totalPages: number;
-  page: number;
-  status: string;
-}
+export default function GalleryGrid() {
+  const searchParams = useSearchParams();
+  const page = Number(searchParams.get("page") || "1");
+  const status = searchParams.get("status") || "all";
 
-export default function GalleryGrid({ images, totalPages, page, status }: Props) {
+  const [images, setImages] = useState<GalleryItemType[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const limit = 12;
+      const offset = (page - 1) * limit;
+      const query = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+      if (status !== "all") query.set("status", status);
+
+      try {
+        const res = await apiFetch(`/gallery?${query.toString()}`);
+        setImages(res.rows ?? []);
+        setTotalPages(res.total_paginas ?? 1);
+      } catch (err) {
+        console.error("Erro ao buscar galeria:", err);
+      }
+    };
+
+    fetchData();
+  }, [page, status]);
+
   const queryString = (pageNumber: number) => {
     const params = new URLSearchParams();
     params.set("page", String(pageNumber));
@@ -24,8 +48,30 @@ export default function GalleryGrid({ images, totalPages, page, status }: Props)
     return `?${params.toString()}`;
   };
 
+  const filterButton = (label: string, value: string) => {
+    const isActive = status === value;
+    return (
+      <Link
+        key={value}
+        href={`?page=1${value !== "all" ? `&status=${value}` : ""}`}
+        prefetch={false}
+        className={`px-4 py-2 rounded ${
+          isActive ? "bg-blue-700 text-white" : "bg-gray-200 text-black"
+        }`}
+      >
+        {label}
+      </Link>
+    );
+  };
+
   return (
-    <div>
+    <>
+      <div className="flex gap-4 mb-6">
+        {filterButton("🔘 Todos", "all")}
+        {filterButton("✅ Ativos", "active")}
+        {filterButton("❌ Inativos", "inactive")}
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {images.map((img) => (
           <GalleryItem
@@ -68,6 +114,6 @@ export default function GalleryGrid({ images, totalPages, page, status }: Props)
           </Link>
         )}
       </div>
-    </div>
+    </>
   );
 }

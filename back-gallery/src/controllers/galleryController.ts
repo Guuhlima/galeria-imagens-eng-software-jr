@@ -5,30 +5,18 @@ import { promisify } from "node:util";
 import { extname, resolve } from "path";
 import { randomUUID } from "crypto";
 import { prisma } from "../lib/prisma";
+import { Static } from "@sinclair/typebox";
+import {
+  GalleryCreateBody,
+  GalleryUpdateBody,
+  GalleryParams,
+  GalleryQuery,
+} from "../schemas/gallerySchemas";
 
 const pump = promisify(pipeline);
 
-interface CreateGalleryBody {
-  title: string;
-}
-
-interface UpdateGalleryBody {
-  title: string;
-}
-
-interface GalleryParams {
-  galleryId: string;
-}
-
-interface ListQuery {
-  limit?: string;
-  offset?: string;
-  search?: string;
-  status?: string;
-}
-
 export async function galleryCreate(
-  request: FastifyRequest<{ Body: CreateGalleryBody }>,
+  request: FastifyRequest<{ Body: Static<typeof GalleryCreateBody> }>,
   reply: FastifyReply
 ) {
   const { title } = request.body;
@@ -50,24 +38,17 @@ export async function galleryCreate(
 }
 
 export async function galleryUpload(
-  request: FastifyRequest<{ Params: GalleryParams }>,
+  request: FastifyRequest<{ Params: Static<typeof GalleryParams> }> & { file: () => Promise<any> },
   reply: FastifyReply
 ) {
   const file = await (request as any).file();
   const { galleryId } = request.params;
 
   try {
-    const gallery = await prisma.gallery.findFirst({
-      where: { id: Number(galleryId) },
-    });
+    const gallery = await prisma.gallery.findFirst({ where: { id: Number(galleryId) } });
 
-    if (!gallery) {
-      return reply.status(404).send({ error: "Not Found", message: "Galeria não encontrada" });
-    }
-
-    if (!file) {
-      return reply.status(400).send({ error: "Bad Request", message: "Nenhum arquivo enviado" });
-    }
+    if (!gallery) return reply.status(404).send({ error: "Not Found", message: "Galeria não encontrada" });
+    if (!file) return reply.status(400).send({ error: "Bad Request", message: "Nenhum arquivo enviado" });
 
     if (gallery.filename) {
       const oldPath = resolve(__dirname, "../../uploads/", gallery.filename);
@@ -83,10 +64,7 @@ export async function galleryUpload(
 
     const updatedGallery = await prisma.gallery.update({
       where: { id: gallery.id },
-      data: {
-        filename: fileName,
-        url: `/uploads/${fileName}`,
-      },
+      data: { filename: fileName, url: `/uploads/${fileName}` },
     });
 
     return reply.status(200).send({ message: "Upload realizado com sucesso", gallery: updatedGallery });
@@ -96,7 +74,10 @@ export async function galleryUpload(
 }
 
 export async function galleryUpdate(
-  request: FastifyRequest<{ Params: GalleryParams; Body: UpdateGalleryBody }>,
+  request: FastifyRequest<{
+    Params: Static<typeof GalleryParams>;
+    Body: Static<typeof GalleryUpdateBody>;
+  }> ,
   reply: FastifyReply
 ) {
   const { galleryId } = request.params;
@@ -106,13 +87,8 @@ export async function galleryUpdate(
     const gallery = await prisma.gallery.findUnique({ where: { id: Number(galleryId) } });
     if (!gallery) return reply.status(404).send({ error: "Not Found", message: "Galeria não encontrada" });
 
-    const galleryExist = await prisma.gallery.findFirst({
-      where: { title, NOT: { id: Number(galleryId) } },
-    });
-
-    if (galleryExist) {
-      return reply.status(400).send({ error: "Bad Request", message: "Já existe uma galeria com esse título" });
-    }
+    const galleryExist = await prisma.gallery.findFirst({ where: { title, NOT: { id: Number(galleryId) } } });
+    if (galleryExist) return reply.status(400).send({ error: "Bad Request", message: "Título já existe" });
 
     const updated = await prisma.gallery.update({ where: { id: Number(galleryId) }, data: { title } });
     return reply.status(200).send({ message: "Galeria atualizada com sucesso", gallery: updated });
@@ -122,7 +98,7 @@ export async function galleryUpdate(
 }
 
 export async function listGallery(
-  request: FastifyRequest<{ Querystring: ListQuery }>,
+  request: FastifyRequest<{ Querystring: Static<typeof GalleryQuery> }> ,
   reply: FastifyReply
 ) {
   const { limit = "12", offset = "0", search = "", status = "all" } = request.query;
@@ -153,14 +129,13 @@ export async function listGallery(
         hasPreviousPage: Number(offset) > 0,
       },
     });
-
   } catch (error: any) {
     return reply.status(500).send({ error: "Internal Server Error", message: error.message });
   }
 }
 
 export async function galleryDelete(
-  request: FastifyRequest<{ Params: GalleryParams }>,
+  request: FastifyRequest<{ Params: Static<typeof GalleryParams> }> ,
   reply: FastifyReply
 ) {
   const { galleryId } = request.params;
@@ -182,7 +157,7 @@ export async function galleryDelete(
 }
 
 export async function galleryToggleAtiva(
-  request: FastifyRequest<{ Params: GalleryParams }>,
+  request: FastifyRequest<{ Params: Static<typeof GalleryParams> }> ,
   reply: FastifyReply
 ) {
   const { galleryId } = request.params;
@@ -206,7 +181,7 @@ export async function galleryToggleAtiva(
 }
 
 export async function galleryGetById(
-  request: FastifyRequest<{ Params: GalleryParams }>,
+  request: FastifyRequest<{ Params: Static<typeof GalleryParams> }> ,
   reply: FastifyReply
 ) {
   const { galleryId } = request.params;

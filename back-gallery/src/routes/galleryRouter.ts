@@ -1,12 +1,71 @@
 import { FastifyInstance } from "fastify";
-import { galleryCreate, galleryUpdate, galleryUpload, listGallery, galleryDelete, galleryToggleAtiva, galleryGetById } from "../controllers/galleryController";
+import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
+import {
+  GalleryParams,
+  GalleryQuery,
+  GalleryCreateBody,
+  GalleryUpdateBody,
+} from '../schemas/gallerySchemas';
+import {
+  galleryCreate,
+  galleryUpload,
+  galleryUpdate,
+  galleryDelete,
+  galleryToggleAtiva,
+  galleryGetById,
+  listGallery,
+} from '../controllers/galleryController';
 
 export async function galleryRouter(app: FastifyInstance) {
-  app.get("/gallery", listGallery);
-  app.post("/gallery", galleryCreate);
-  app.post("/gallery/:galleryId/upload", galleryUpload);
-  app.get("/gallery/:galleryId", galleryGetById);
-  app.put("/gallery/:galleryId", galleryUpdate);
-  app.delete("/gallery/:galleryId", galleryDelete);
-  app.patch("/gallery/:galleryId/active", galleryToggleAtiva); 
+  app.withTypeProvider<TypeBoxTypeProvider>().route({
+    method: 'GET',
+    url: '/gallery',
+    schema: { querystring: GalleryQuery },
+    handler: listGallery,
+  });
+
+  app.withTypeProvider<TypeBoxTypeProvider>().route({
+    method: 'POST',
+    url: '/gallery',
+    schema: { body: GalleryCreateBody },
+    handler: galleryCreate,
+  });
+
+  app.withTypeProvider<TypeBoxTypeProvider>().route({
+    method: 'POST',
+    url: '/gallery/:galleryId/upload',
+    schema: { params: GalleryParams },
+    handler: galleryUpload,
+  });
+
+  app.withTypeProvider<TypeBoxTypeProvider>().route({
+    method: 'GET',
+    url: '/gallery/:galleryId',
+    schema: { params: GalleryParams },
+    handler: galleryGetById,
+  });
+
+  app.withTypeProvider<TypeBoxTypeProvider>().route({
+    method: 'PUT',
+    url: '/gallery/:galleryId',
+    schema: {
+      params: GalleryParams,
+      body: GalleryUpdateBody,
+    },
+    handler: galleryUpdate,
+  });
+
+  app.withTypeProvider<TypeBoxTypeProvider>().route({
+    method: 'DELETE',
+    url: '/gallery/:galleryId',
+    schema: { params: GalleryParams },
+    handler: galleryDelete,
+  });
+
+  app.withTypeProvider<TypeBoxTypeProvider>().route({
+    method: 'PATCH',
+    url: '/gallery/:galleryId/active',
+    schema: { params: GalleryParams },
+    handler: galleryToggleAtiva,
+  });
 }

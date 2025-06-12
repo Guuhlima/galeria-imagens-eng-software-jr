@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { apiFetch, apiUpload } from "@/lib/api";
 
-// ✅ Interface que declara que o componente espera um id
 interface EditGalleryPageProps {
   id: string;
 }

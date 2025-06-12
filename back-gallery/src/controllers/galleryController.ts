@@ -50,17 +50,24 @@ export async function galleryCreate(
 }
 
 export async function galleryUpload(
-  request: FastifyRequest<{ Params: GalleryParams }> & { file: Function },
+  request: FastifyRequest<{ Params: GalleryParams }>,
   reply: FastifyReply
 ) {
+  const file = await (request as any).file();
   const { galleryId } = request.params;
 
   try {
-    const gallery = await prisma.gallery.findFirst({ where: { id: Number(galleryId) } });
-    if (!gallery) return reply.status(404).send({ error: "Not Found", message: "Galeria não encontrada" });
+    const gallery = await prisma.gallery.findFirst({
+      where: { id: Number(galleryId) },
+    });
 
-    const upload = await request.file({ limits: { fileSize: 5 * 1024 * 1024 } });
-    if (!upload) return reply.status(400).send({ error: "Bad Request", message: "Nenhum arquivo enviado" });
+    if (!gallery) {
+      return reply.status(404).send({ error: "Not Found", message: "Galeria não encontrada" });
+    }
+
+    if (!file) {
+      return reply.status(400).send({ error: "Bad Request", message: "Nenhum arquivo enviado" });
+    }
 
     if (gallery.filename) {
       const oldPath = resolve(__dirname, "../../uploads/", gallery.filename);
@@ -68,14 +75,18 @@ export async function galleryUpload(
     }
 
     const fileId = randomUUID();
-    const extension = extname(upload.filename);
+    const extension = extname(file.filename);
     const fileName = `${fileId}${extension}`;
     const filePath = resolve(__dirname, "../../uploads/", fileName);
-    await pump(upload.file, createWriteStream(filePath));
+
+    await pump(file.file, createWriteStream(filePath));
 
     const updatedGallery = await prisma.gallery.update({
       where: { id: gallery.id },
-      data: { filename: fileName, url: `/uploads/${fileName}` },
+      data: {
+        filename: fileName,
+        url: `/uploads/${fileName}`,
+      },
     });
 
     return reply.status(200).send({ message: "Upload realizado com sucesso", gallery: updatedGallery });
@@ -131,7 +142,18 @@ export async function listGallery(
       select: { id: true, title: true, url: true, active: true },
     });
 
-    return reply.send({ total_paginas: Math.ceil(total / Number(limit)), rows });
+    return reply.send({
+      data: rows,
+      pagination: {
+        page: Math.floor(Number(offset) / Number(limit)) + 1,
+        limit: Number(limit),
+        totalItems: total,
+        totalPages: Math.ceil(total / Number(limit)),
+        hasNextPage: Number(offset) + Number(limit) < total,
+        hasPreviousPage: Number(offset) > 0,
+      },
+    });
+
   } catch (error: any) {
     return reply.status(500).send({ error: "Internal Server Error", message: error.message });
   }

@@ -5,13 +5,15 @@ import Link from "next/link";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ImageItem } from "@/app/models/imageItem";
 
 interface GalleryItemProps {
-  id: number;
+  id: string;
   title: string;
   url: string;
   active: boolean;
 }
+
 
 export default function GalleryItem({ id, title, url, active }: GalleryItemProps) {
   const [isActive, setIsActive] = useState(active);
@@ -35,7 +37,7 @@ export default function GalleryItem({ id, title, url, active }: GalleryItemProps
       });
 
       if (res.ok) {
-        router.refresh();
+        router.push(window.location.pathname);
       } else {
         Swal.fire("Erro", "Não foi possível deletar a imagem", "error");
       }

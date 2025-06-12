@@ -74,7 +74,7 @@ export default function EditGalleryPage({ id }: EditGalleryPageProps) {
 
       {(previewUrl || currentUrl) && (
         <Image
-          src={previewUrl || `http://localhost:3333${currentUrl}`}
+          src={previewUrl || `${process.env.NEXT_PUBLIC_API_URL}${currentUrl}`}
           alt={title}
           width={300}
           height={200}

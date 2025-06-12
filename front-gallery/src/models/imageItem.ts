@@ -1,7 +1,7 @@
 export type ImageStatus = "all" | "active" | "inactive";
 
 export interface ImageItem {
-  id: string;
+  id: number;
   title: string;
   url: string;
   active: boolean;

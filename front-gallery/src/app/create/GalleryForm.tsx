@@ -12,7 +12,8 @@ export default function GalleryForm() {
   const [message, setMessage] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
   const router = useRouter();
-
+  const PLACEHOLDER_IMAGE = "https://placeholder.com/temporary.jpg";
+  
   const {
     register,
     handleSubmit,
@@ -29,10 +30,7 @@ export default function GalleryForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          title: data.title,
-          url: "https://placeholder.com/temporary.jpg",
-        }),
+        body: JSON.stringify({ title: data.title, url: PLACEHOLDER_IMAGE }),
       });
 
       const galleryId: number = result.gallery.id;

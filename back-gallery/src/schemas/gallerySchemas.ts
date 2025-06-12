@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox';
 
 export const GalleryParams = Type.Object({
-  galleryId: Type.String(),
+  galleryId: Type.Integer(),
 });
 
 export const GalleryQuery = Type.Object({

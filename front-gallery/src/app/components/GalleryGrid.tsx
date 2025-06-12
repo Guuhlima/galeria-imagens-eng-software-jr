@@ -19,14 +19,17 @@ export default function GalleryGrid() {
 
   const [images, setImages] = useState<ImageItem[]>([]);
   const [totalPages, setTotalPages] = useState(1);
+  const [reloadFlag, setReloadFlag] = useState(0);
+
+  const handleReload = () => setReloadFlag((prev) => prev + 1);
 
   useEffect(() => {
     const fetchData = async () => {
       const limit = 12;
       const offset = (page - 1) * limit;
-      const query = new URLSearchParams({ 
-        limit: String(limit), 
-        offset: String(offset) 
+      const query = new URLSearchParams({
+        limit: String(limit),
+        offset: String(offset),
       });
 
       if (status !== "all") query.set("status", status);
@@ -41,7 +44,7 @@ export default function GalleryGrid() {
     };
 
     fetchData();
-  }, [page, status]);
+  }, [page, status, reloadFlag]); 
 
   const queryString = (pageNumber: number) => {
     const params = new URLSearchParams();
@@ -57,7 +60,9 @@ export default function GalleryGrid() {
         key={value}
         href={`?page=1${value !== "all" ? `&status=${value}` : ""}`}
         prefetch={false}
-        className={`px-4 py-2 rounded ${isActive ? "bg-blue-700 text-white" : "bg-gray-200 text-black"}`}
+        className={`px-4 py-2 rounded ${
+          isActive ? "bg-blue-700 text-white" : "bg-gray-200 text-black"
+        }`}
       >
         {label}
       </Link>
@@ -83,6 +88,7 @@ export default function GalleryGrid() {
               title={img.title}
               url={convertUrl(img.url)}
               active={img.active}
+              onDeleted={handleReload}
             />
           ))
         )}

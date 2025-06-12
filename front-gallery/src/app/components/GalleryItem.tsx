@@ -3,22 +3,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import Swal from "sweetalert2";
-import { useRouter } from "next/navigation";
+import { apiFetch } from "@/lib/api";
 import { useState } from "react";
 
 interface GalleryItemProps {
-  id: string;
+  id: number;
   title: string;
   url: string;
   active: boolean;
+  onDeleted?: () => void;
 }
 
-
-export default function GalleryItem({ id, title, url, active }: GalleryItemProps) {
+export default function GalleryItem({ id, title, url, active, onDeleted }: GalleryItemProps) {
   const [isActive, setIsActive] = useState(active);
-  const router = useRouter();
-
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
   const handleDelete = async () => {
     const resultado = await Swal.fire({
@@ -30,16 +27,13 @@ export default function GalleryItem({ id, title, url, active }: GalleryItemProps
       cancelButtonText: "Cancelar",
     });
 
-    if (resultado.isConfirmed) {
-      const res = await fetch(`${baseUrl}/gallery/${id}`, {
-        method: "DELETE",
-      });
+    if (!resultado.isConfirmed) return;
 
-      if (res.ok) {
-        router.refresh();
-      } else {
-        Swal.fire("Erro", "Não foi possível deletar a imagem", "error");
-      }
+    try {
+      await apiFetch(`/gallery/${id}`, { method: "DELETE" });
+      onDeleted?.();
+    } catch {
+      Swal.fire("Erro", "Não foi possível deletar a imagem", "error");
     }
   };
 
@@ -52,16 +46,19 @@ export default function GalleryItem({ id, title, url, active }: GalleryItemProps
       cancelButtonText: "Cancelar",
     });
 
-    if (result.isConfirmed) {
-      const res = await fetch(`${baseUrl}/gallery/${id}/active`, {
-        method: "PATCH",
-      });
+    if (!result.isConfirmed) return;
 
-      if (res.ok) {
-        setIsActive((prev) => !prev);
-      } else {
-        Swal.fire("Erro", "Não foi possível atualizar o status da imagem", "error");
-      }
+    try {
+      await apiFetch(`/gallery/${id}/active`, {
+        method: "PATCH",
+        body: JSON.stringify({}),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      setIsActive((prev) => !prev);
+    } catch {
+      Swal.fire("Erro", "Não foi possível atualizar o status da imagem", "error");
     }
   };
 

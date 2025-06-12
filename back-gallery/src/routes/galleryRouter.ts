@@ -4,7 +4,7 @@ import {
   GalleryQuery,
   GalleryCreateBody,
   GalleryUpdateBody,
-} from '../schemas/gallerySchemas';
+} from "../schemas/gallerySchemas";
 import {
   galleryCreate,
   galleryUpload,
@@ -13,30 +13,32 @@ import {
   galleryToggleAtiva,
   galleryGetById,
   listGallery,
-} from '../controllers/galleryController';
+} from "../controllers/galleryController";
 
 export async function galleryRouter(app: FastifyInstance) {
-  app.get('/gallery', {
+  app.withTypeProvider(); 
+
+  app.get("/gallery", {
     schema: { querystring: GalleryQuery },
     handler: listGallery,
   });
 
-  app.post('/gallery', {
+  app.post("/gallery", {
     schema: { body: GalleryCreateBody },
     handler: galleryCreate,
   });
 
-  app.post('/gallery/:galleryId/upload', {
+  app.post("/gallery/:galleryId/upload", {
     schema: { params: GalleryParams },
     handler: galleryUpload,
   });
 
-  app.get('/gallery/:galleryId', {
+  app.get("/gallery/:galleryId", {
     schema: { params: GalleryParams },
     handler: galleryGetById,
   });
 
-  app.put('/gallery/:galleryId', {
+  app.put("/gallery/:galleryId", {
     schema: {
       params: GalleryParams,
       body: GalleryUpdateBody,
@@ -44,12 +46,12 @@ export async function galleryRouter(app: FastifyInstance) {
     handler: galleryUpdate,
   });
 
-  app.delete('/gallery/:galleryId', {
+  app.delete("/gallery/:galleryId", {
     schema: { params: GalleryParams },
     handler: galleryDelete,
   });
 
-  app.patch('/gallery/:galleryId/active', {
+  app.patch("/gallery/:galleryId/active", {
     schema: { params: GalleryParams },
     handler: galleryToggleAtiva,
   });

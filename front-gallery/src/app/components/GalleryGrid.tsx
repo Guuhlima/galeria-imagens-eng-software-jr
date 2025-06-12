@@ -1,8 +1,8 @@
 import { convertUrl } from "@/lib/utils";
 import Link from "next/link";
-import GalleryActions from "./GalleryActions";
+import GalleryItem from "./GalleryItem";
 
-type GalleryItem = {
+type GalleryItemType = {
   id: number;
   title: string;
   url: string;
@@ -10,7 +10,7 @@ type GalleryItem = {
 };
 
 interface Props {
-  images: GalleryItem[];
+  images: GalleryItemType[];
   totalPages: number;
   page: number;
   status: string;
@@ -28,20 +28,13 @@ export default function GalleryGrid({ images, totalPages, page, status }: Props)
     <div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {images.map((img) => (
-          <div key={img.id} className="border rounded shadow p-4">
-            <img
-              src={convertUrl(img.url)}
-              alt={img.title}
-              className="w-full h-[300px] object-cover rounded"
-            />
-            <h2 className="mt-2 font-semibold text-lg">{img.title}</h2>
-            <div className="flex gap-2 mt-2">
-              <Link href="create" className="bg-gray-600 text-white px-4 py-2 rounded">
-                Add
-              </Link>
-            </div>
-            <GalleryActions id={img.id} active={img.active ?? true} />
-          </div>
+          <GalleryItem
+            key={img.id}
+            id={img.id}
+            title={img.title}
+            url={convertUrl(img.url)}
+            active={img.active ?? true}
+          />
         ))}
       </div>
 

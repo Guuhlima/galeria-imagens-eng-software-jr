@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface GalleryItemProps {
   id: number;
@@ -14,6 +15,7 @@ interface GalleryItemProps {
 
 export default function GalleryItem({ id, title, url, active }: GalleryItemProps) {
   const router = useRouter();
+  const [isActive, setIsActive] = useState(active);
 
   const handleDelete = async () => {
     const resultado = await Swal.fire({
@@ -26,14 +28,14 @@ export default function GalleryItem({ id, title, url, active }: GalleryItemProps
     });
 
     if (resultado.isConfirmed) {
-      await fetch(`/api/gallery/${id}`, { method: "DELETE" });
+      await fetch(`http://localhost:3333/gallery/${id}`, { method: "DELETE" });
       router.refresh();
     }
   };
 
   const handleToggleAtiva = async () => {
     const result = await Swal.fire({
-      title: `Deseja ${active ? "desativar" : "ativar"} esta imagem?`,
+      title: `Deseja ${isActive ? "desativar" : "ativar"} esta imagem?`,
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Sim",
@@ -41,8 +43,15 @@ export default function GalleryItem({ id, title, url, active }: GalleryItemProps
     });
 
     if (result.isConfirmed) {
-      await fetch(`/api/gallery/${id}/active`, { method: "PATCH" });
-      router.refresh();
+      const res = await fetch(`http://localhost:3333/gallery/${id}/active`, {
+        method: "PATCH",
+      });
+
+      if (res.ok) {
+        setIsActive((prev) => !prev);
+      } else {
+        Swal.fire("Erro", "Não foi possível atualizar o status da imagem", "error");
+      }
     }
   };
 
@@ -54,7 +63,7 @@ export default function GalleryItem({ id, title, url, active }: GalleryItemProps
           alt={title}
           width={200}
           height={200}
-          className="mx-auto mb-2"
+          className="mx-auto mb-2 rounded"
         />
       ) : (
         <div className="w-[200px] h-[200px] bg-gray-200 mx-auto mb-2 flex items-center justify-center text-sm text-gray-500 rounded">
@@ -74,7 +83,11 @@ export default function GalleryItem({ id, title, url, active }: GalleryItemProps
         </button>
 
         <button onClick={handleToggleAtiva} className="hover:underline">
-          {active ? "🟢 Ativo" : "🔴 Inativo"}
+          {isActive ? (
+            <span className="text-green-600">🟢 Ativo</span>
+          ) : (
+            <span className="text-red-600">🔴 Inativo</span>
+          )}
         </button>
       </div>
     </div>

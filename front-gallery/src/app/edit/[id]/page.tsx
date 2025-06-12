@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export default function EditGalleryPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -16,7 +14,7 @@ export default function EditGalleryPage() {
 
   useEffect(() => {
     async function fetchData() {
-      const res = await fetch(`${API_URL}/gallery/${id}`);
+      const res = await fetch(`http://localhost:3333/gallery/${id}`);
       const data = await res.json();
       setTitle(data.title);
       setCurrentUrl(data.url);
@@ -27,7 +25,7 @@ export default function EditGalleryPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    await fetch(`${API_URL}/gallery/${id}`, {
+    await fetch(`http://localhost:3333/gallery/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title }),
@@ -36,7 +34,8 @@ export default function EditGalleryPage() {
     if (image) {
       const formData = new FormData();
       formData.append("file", image);
-      await fetch(`${API_URL}/gallery/${id}/upload`, {
+
+      await fetch(`http://localhost:3333/gallery/${id}/upload`, {
         method: "POST",
         body: formData,
       });
@@ -52,7 +51,7 @@ export default function EditGalleryPage() {
 
       {currentUrl && (
         <Image
-          src={`${API_URL}${currentUrl}`}
+          src={`http://localhost:3333${currentUrl}`}
           alt={title}
           width={300}
           height={200}

@@ -6,7 +6,7 @@ export async function galleryRouter(app: FastifyInstance) {
   app.post("/gallery", galleryCreate);
   app.post("/gallery/:galleryId/upload", galleryUpload);
   app.get("/gallery/:galleryId", galleryGetById);
-  app.patch("/gallery/:galleryId", galleryUpdate);
+  app.put("/gallery/:galleryId", galleryUpdate);
   app.delete("/gallery/:galleryId", galleryDelete);
   app.patch("/gallery/:galleryId/active", galleryToggleAtiva); 
 }

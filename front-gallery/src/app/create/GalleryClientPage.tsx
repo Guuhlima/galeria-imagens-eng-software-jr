@@ -32,7 +32,7 @@ export default function GalleryClientPage() {
         setTotalPages(res.total_paginas);
       })
       .catch((err) => console.error("Erro ao buscar dados:", err));
-  }, [page, status]);
+  }, [page, status, offset]);
 
   return (
     <div className="px-4 sm:px-8 md:px-16">

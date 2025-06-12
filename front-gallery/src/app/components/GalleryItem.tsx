@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import Swal from "sweetalert2";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface GalleryItemProps {
@@ -14,23 +13,30 @@ interface GalleryItemProps {
 }
 
 export default function GalleryItem({ id, title, url, active }: GalleryItemProps) {
-  const router = useRouter();
   const [isActive, setIsActive] = useState(active);
 
   const handleDelete = async () => {
-    const resultado = await Swal.fire({
-      title: "Deseja deletar essa imagem?",
-      text: "Essa ação após aceita não há mais volta",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Sim, deletar",
-      cancelButtonText: "Cancelar",
-    });
+      const resultado = await Swal.fire({
+        title: "Deseja deletar essa imagem?",
+        text: "Essa ação após aceita não há mais volta",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sim, deletar",
+        cancelButtonText: "Cancelar",
+      });
 
-    if (resultado.isConfirmed) {
-      await fetch(`http://localhost:3333/gallery/${id}`, { method: "DELETE" });
-      router.refresh();
-    }
+      if (resultado.isConfirmed) {
+        const res = await fetch(`http://localhost:3333/gallery/${id}`, {
+          method: "DELETE",
+        });
+
+        if (res.ok) {
+          // Recarrega a página após deletar
+          window.location.reload();
+        } else {
+          Swal.fire("Erro", "Não foi possível deletar a imagem", "error");
+        }
+      }
   };
 
   const handleToggleAtiva = async () => {

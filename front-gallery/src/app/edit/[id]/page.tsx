@@ -72,11 +72,16 @@ export default function EditGalleryPage() {
 
         <div>
           <label className="block mb-1 font-medium">Nova Imagem</label>
-          <input
-            type="file"
-            onChange={(e) => setImage(e.target.files?.[0] || null)}
-          />
+          <label className="inline-block bg-gray-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-gray-600">
+            Escolher imagem
+            <input
+              type="file"
+              onChange={(e) => setImage(e.target.files?.[0] || null)}
+              className="hidden"
+            />
+          </label>
         </div>
+
 
         <button
           type="submit"
